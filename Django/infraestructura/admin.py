@@ -1,7 +1,6 @@
-from django.contrib import admin
-
-from django.contrib import admin
+from django.contrib import admin, messages
 from .models import NodoServidor
+
 
 @admin.register(NodoServidor)
 class NodoServidorAdmin(admin.ModelAdmin):
@@ -16,3 +15,40 @@ class NodoServidorAdmin(admin.ModelAdmin):
 
     # Orden por defecto
     ordering = ('-fecha_despliegue',)
+
+    # Acciones masivas disponibles en el desplegable del listado
+    actions = ('marcar_como_produccion', 'marcar_como_mantenimiento')
+
+    @admin.action(description="Activar Producción Masiva")
+    def marcar_como_produccion(self, request, queryset):
+        """Pone en producción (en_produccion=True) los nodos seleccionados."""
+        actualizados = queryset.filter(en_produccion=False).update(en_produccion=True)
+        if actualizados:
+            self.message_user(
+                request,
+                f"{actualizados} nodo(s) puestos en producción correctamente.",
+                messages.SUCCESS,
+            )
+        else:
+            self.message_user(
+                request,
+                "Ningún cambio: los nodos seleccionados ya estaban en producción.",
+                messages.INFO,
+            )
+
+    @admin.action(description="Poner en Mantenimiento")
+    def marcar_como_mantenimiento(self, request, queryset):
+        """Aísla los nodos seleccionados (en_produccion=False)."""
+        actualizados = queryset.filter(en_produccion=True).update(en_produccion=False)
+        if actualizados:
+            self.message_user(
+                request,
+                f"{actualizados} nodo(s) retirados de producción y puestos en mantenimiento.",
+                messages.WARNING,
+            )
+        else:
+            self.message_user(
+                request,
+                "Ningún cambio: los nodos seleccionados ya estaban en mantenimiento.",
+                messages.INFO,
+            )
