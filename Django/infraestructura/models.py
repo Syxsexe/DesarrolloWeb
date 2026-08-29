@@ -89,3 +89,46 @@ class NodoServidor(models.Model):
     class Meta:
         verbose_name = "Nodo de Servidor"
         verbose_name_plural = "Flota de Servidores"
+
+
+class RegistroAuditoria(models.Model):
+    """Bitácora de eventos críticos ocurridos sobre un NodoServidor."""
+
+    # Relación de llave foránea (FK) hacia NodoServidor: cada registro de
+    # auditoría pertenece a UN servidor, pero un servidor puede tener MUCHOS
+    # registros de auditoría (relación uno-a-muchos).
+    servidor = models.ForeignKey(
+        NodoServidor,
+        # on_delete=CASCADE indica que si se elimina el NodoServidor,
+        # Django borrará en cascada todos sus registros de auditoría
+        # asociados (no quedan registros "huérfanos" apuntando a un
+        # servidor inexistente).
+        on_delete=models.CASCADE,
+        # related_name='auditorias' permite acceder desde una instancia de
+        # NodoServidor a todos sus eventos con la sintaxis
+        # nodo.auditorias.all(), en vez del nombre por defecto que
+        # generaría Django (registroauditoria_set).
+        related_name='auditorias',
+        verbose_name="Servidor Afectado",
+    )
+
+    # TextField (a diferencia de CharField) no exige una longitud máxima,
+    # apropiado para descripciones de eventos que pueden ser extensas.
+    detalles = models.TextField(verbose_name="Detalle del Evento")
+
+    # auto_now_add=True hace que Django asigne la fecha/hora actual
+    # automáticamente SOLO al crear el registro (no se puede editar
+    # después ni se actualiza en modificaciones posteriores). Es distinto
+    # de auto_now=True, que se actualizaría en cada guardado.
+    fecha_evento = models.DateTimeField(auto_now_add=True, verbose_name="Fecha del Evento")
+
+    def __str__(self):
+        # Representación legible en el admin y en el shell de Django:
+        # combina el servidor afectado con la fecha del evento.
+        return f"[{self.fecha_evento:%Y-%m-%d %H:%M}] {self.servidor.nombre_host}"
+
+    class Meta:
+        verbose_name = "Registro de Auditoría"
+        verbose_name_plural = "Historial de Auditoría"
+        # Ordena los registros del más reciente al más antiguo por defecto.
+        ordering = ('-fecha_evento',)
