@@ -1,0 +1,88 @@
+{% extends "infraestructura/base.html" %}
+
+{% block title %}{{ servidor.nombre_host }} - UdenarNova{% endblock %}
+
+{% block encabezado_titulo %}{{ servidor.nombre_host }}{% endblock %}
+{% block encabezado_subtitulo %}Ficha del nodo {{ servidor.direccion_ip }}{% endblock %}
+
+{% block encabezado_cuerpo %}
+    {% if servidor.en_produccion %}
+    <span class="badge bg-success fs-6">En producción</span>
+    {% else %}
+    <span class="badge bg-warning text-dark fs-6">En mantenimiento</span>
+    {% endif %}
+    <a href="{% url 'HomeServers' %}" class="btn btn-outline-secondary btn-sm ms-2">&larr; Volver a la flota</a>
+{% endblock %}
+
+{% block contenido %}
+<div class="row g-4 mb-5">
+
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-dark text-white">Datos del nodo</div>
+            <table class="table table-striped mb-0 align-middle">
+                <tbody>
+                    <tr>
+                        <th scope="row" class="w-50">Hostname</th>
+                        <td>{{ servidor.nombre_host }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Dirección IP</th>
+                        <td>{{ servidor.direccion_ip }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Motor de contenedores</th>
+                        <td>{{ servidor.get_motor_contenedores_display }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Enrutado por Nginx</th>
+                        <td>
+                            {% if servidor.proxy_inverso %}
+                            <span class="text-success fw-bold">Sí</span>
+                            {% else %}
+                            <span class="text-danger fw-bold">No</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Estado</th>
+                        <td>
+                            {% if servidor.en_produccion %}
+                            <span class="badge bg-success">Producción</span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark">Mantenimiento</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Fecha de despliegue</th>
+                        <td>{{ servidor.fecha_despliegue|date:"d/m/Y H:i" }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                <span>Historial de auditoría</span>
+                <span class="badge bg-secondary">{{ auditorias.count }}</span>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for evento in auditorias %}
+                <li class="list-group-item">
+                    <div class="small text-muted">{{ evento.fecha_evento|date:"d/m/Y H:i" }}</div>
+                    {{ evento.detalles }}
+                </li>
+                {% empty %}
+                <li class="list-group-item text-center text-muted py-4">
+                    Este servidor no tiene eventos de auditoría registrados.
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,66 +1,54 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Centro de Comando - UdenarNova</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-    <div class="container mt-5">
-        <div class="p-5 mb-4 bg-white rounded-3 shadow-sm border">
-            <div class="container-fluid py-3">
-                <h1 class="display-5 fw-bold text-primary">Centro de Comando</h1>
-                <p class="col-md-8 fs-4 text-muted">UdenarNova SAS - Módulo de Infraestructura</p>
-                <hr class="my-4">
-                <p>Bienvenido al panel web personalizado conectado a la base de datos.</p>
-                <div class="alert alert-info" role="alert">
-                    Total de servidores registrados: <strong>{{ servidores.count }}</strong>
-                </div>
-            </div>
-        </div>
+{% extends "infraestructura/base.html" %}
 
-        <h2 class="h4 mb-3">Flota de Servidores</h2>
-        <div class="table-responsive mb-5">
-            <table class="table table-striped table-hover bg-white shadow-sm rounded align-middle">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Hostname</th>
-                        <th>Dirección IP</th>
-                        <th>Contenedores</th>
-                        <th>Proxy Nginx</th>
-                        <th>Estado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for nodo in servidores %}
-                    <tr>
-                        <td>{{ nodo.nombre_host }}</td>
-                        <td>{{ nodo.direccion_ip }}</td>
-                        <td>{{ nodo.get_motor_contenedores_display }}</td>
-                        <td>
-                            {% if nodo.proxy_inverso %}
-                            <span class="text-success fw-bold">Sí</span>
-                            {% else %}
-                            <span class="text-danger fw-bold">No</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if nodo.en_produccion %}
-                            <span class="badge bg-success">Producción</span>
-                            {% else %}
-                            <span class="badge bg-warning text-dark">Mantenimiento</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="text-center text-muted py-4">No hay servidores registrados en el sistema.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+{% block title %}Flota de Servidores - UdenarNova{% endblock %}
+
+{% block encabezado_cuerpo %}
+    <p>Bienvenido al panel web personalizado conectado a la base de datos.</p>
+    <div class="alert alert-info mb-0" role="alert">
+        Total de servidores registrados: <strong>{{ servidores.count }}</strong>
     </div>
-</body>
-</html>
+{% endblock %}
+
+{% block contenido %}
+<h2 class="h4 mb-3">Flota de Servidores</h2>
+<div class="table-responsive mb-5">
+    <table class="table table-striped table-hover bg-white shadow-sm rounded align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Hostname</th>
+                <th>Dirección IP</th>
+                <th>Contenedores</th>
+                <th>Proxy Nginx</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for nodo in servidores %}
+            <tr>
+                <td><a href="{% url 'DetalleServidor' nodo.pk %}">{{ nodo.nombre_host }}</a></td>
+                <td>{{ nodo.direccion_ip }}</td>
+                <td>{{ nodo.get_motor_contenedores_display }}</td>
+                <td>
+                    {% if nodo.proxy_inverso %}
+                    <span class="text-success fw-bold">Sí</span>
+                    {% else %}
+                    <span class="text-danger fw-bold">No</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if nodo.en_produccion %}
+                    <span class="badge bg-success">Producción</span>
+                    {% else %}
+                    <span class="badge bg-warning text-dark">Mantenimiento</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center text-muted py-4">No hay servidores registrados en el sistema.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
