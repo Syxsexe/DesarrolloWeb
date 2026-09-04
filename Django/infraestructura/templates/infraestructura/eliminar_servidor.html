@@ -1,0 +1,19 @@
+{% extends 'infraestructura/base.html' %}
+{% block title %}Eliminar - {{ nodo.nombre_host }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 text-center p-4">
+            <div class="card-body">
+                <h3 class="text-danger mb-3">¿Estás seguro?</h3>
+                <p class="text-muted">Estás a punto de eliminar permanentemente el servidor <strong>{{ nodo.nombre_host }}</strong> ({{ nodo.direccion_ip }}).</p>
+                <form method="POST" class="mt-4">
+                    {% csrf_token %}
+                    <a href="{% url 'detalle_servidor' nodo.pk %}" class="btn btn-secondary me-2">Cancelar</a>
+                    <button type="submit" class="btn btn-danger">Sí, eliminar servidor</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

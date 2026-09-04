@@ -12,6 +12,13 @@
 {% block contenido %}
 <h2 class="h4 mb-3">Flota de Servidores</h2>
 <div class="table-responsive mb-5">
+    <!-- Botón superior en index.html -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="text-primary">Flota de Servidores</h1>
+    <a href="{% url 'crear_servidor' %}" class="btn btn-success fw-bold">+ Nuevo Servidor</a>
+</div>
+<!-- Columna de acciones dentro de la tabla -->
+
     <table class="table table-striped table-hover bg-white shadow-sm rounded align-middle">
         <thead class="table-dark">
             <tr>
@@ -20,12 +27,13 @@
                 <th>Contenedores</th>
                 <th>Proxy Nginx</th>
                 <th>Estado</th>
+                <th>Opciones</th>
             </tr>
         </thead>
         <tbody>
             {% for nodo in servidores %}
             <tr>
-                <td><a href="{% url 'DetalleServidor' nodo.pk %}">{{ nodo.nombre_host }}</a></td>
+                <td><a href="{% url 'detalle_servidor' nodo.pk %}">{{ nodo.nombre_host }}</a></td>
                 <td>{{ nodo.direccion_ip }}</td>
                 <td>{{ nodo.get_motor_contenedores_display }}</td>
                 <td>
@@ -42,6 +50,11 @@
                     <span class="badge bg-warning text-dark">Mantenimiento</span>
                     {% endif %}
                 </td>
+                <td class="text-end">
+    <a href="{% url 'detalle_servidor' nodo.pk %}" class="btn btn-sm btn-outline-primary">Ver</a>
+    <a href="{% url 'editar_servidor' nodo.pk %}" class="btn btn-sm btn-outline-warning">Editar</a>
+    <a href="{% url 'eliminar_servidor' nodo.pk %}" class="btn btn-sm btn-outline-danger">Eliminar</a>
+</td>
             </tr>
             {% empty %}
             <tr>
