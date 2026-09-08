@@ -132,3 +132,81 @@ class RegistroAuditoria(models.Model):
         verbose_name_plural = "Historial de Auditoría"
         # Ordena los registros del más reciente al más antiguo por defecto.
         ordering = ('-fecha_evento',)
+
+
+class IncidenciaServidor(models.Model):
+    """Fallos y alertas operativas reportadas sobre un NodoServidor.
+
+    A diferencia de RegistroAuditoria (una bitácora de solo lectura que
+    crece con el tiempo), una incidencia tiene un ciclo de vida: nace
+    'abierta' y en algún momento se marca como 'resuelta', por lo que
+    necesita campos mutables (estado, fecha_resolucion) además de los
+    de registro.
+    """
+
+    # Los choices se guardan como el primer valor (clave interna, estable
+    # aunque cambie el texto) y se muestran con el segundo (etiqueta legible).
+    # Mantener las claves en minúscula evita choques con mayúsculas si en el
+    # futuro se comparan strings manualmente en vistas o templates.
+    SEVERIDAD_CHOICES = [
+        ('baja', 'Baja'),
+        ('media', 'Media'),
+        ('alta', 'Alta'),
+        ('critica', 'Crítica'),
+    ]
+
+    ESTADO_CHOICES = [
+        ('abierta', 'Abierta'),
+        ('resuelta', 'Resuelta'),
+    ]
+
+    # Igual que en RegistroAuditoria: relación uno-a-muchos hacia
+    # NodoServidor. related_name='incidencias' habilita
+    # nodo.incidencias.all() desde una instancia de NodoServidor.
+    servidor = models.ForeignKey(
+        NodoServidor,
+        on_delete=models.CASCADE,
+        related_name='incidencias',
+        verbose_name="Servidor Afectado",
+    )
+
+    titulo = models.CharField(max_length=150, verbose_name="Título")
+    descripcion = models.TextField(verbose_name="Descripción del Fallo")
+
+    severidad = models.CharField(
+        max_length=10,
+        choices=SEVERIDAD_CHOICES,
+        default='media',
+        verbose_name="Severidad",
+    )
+
+    # No se usa un BooleanField (ej. resuelto=True/False) porque el
+    # enunciado pide un "estado de resolución": un CharField con choices
+    # deja la puerta abierta a más estados futuros (ej. 'en_progreso')
+    # sin tener que migrar el tipo de dato.
+    estado = models.CharField(
+        max_length=10,
+        choices=ESTADO_CHOICES,
+        default='abierta',
+        verbose_name="Estado de Resolución",
+    )
+
+    # auto_now_add=True: se fija una sola vez, al crear la incidencia.
+    fecha_reporte = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Reporte")
+
+    # null=True/blank=True porque en el momento de crear la incidencia
+    # todavía no está resuelta; el valor se completa después, cuando la
+    # vista de resolución la marca como 'resuelta'.
+    fecha_resolucion = models.DateTimeField(
+        null=True, blank=True, verbose_name="Fecha de Resolución"
+    )
+
+    def __str__(self):
+        return f"[{self.get_severidad_display()}] {self.titulo} — {self.servidor.nombre_host}"
+
+    class Meta:
+        verbose_name = "Incidencia de Servidor"
+        verbose_name_plural = "Incidencias de Servidores"
+        # Las incidencias más recientes (y presumiblemente las que aún
+        # requieren atención) aparecen primero en cualquier listado.
+        ordering = ('-fecha_reporte',)

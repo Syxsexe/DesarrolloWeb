@@ -1,5 +1,5 @@
 from django.contrib import admin, messages
-from .models import NodoServidor
+from .models import NodoServidor, IncidenciaServidor
 
 
 @admin.register(NodoServidor)
@@ -52,3 +52,11 @@ class NodoServidorAdmin(admin.ModelAdmin):
                 "Ningún cambio: los nodos seleccionados ya estaban en mantenimiento.",
                 messages.INFO,
             )
+
+
+@admin.register(IncidenciaServidor)
+class IncidenciaServidorAdmin(admin.ModelAdmin):
+    list_display = ('titulo', 'servidor', 'severidad', 'estado', 'fecha_reporte')
+    list_filter = ('severidad', 'estado')
+    search_fields = ('titulo', 'descripcion', 'servidor__nombre_host')
+    ordering = ('-fecha_reporte',)

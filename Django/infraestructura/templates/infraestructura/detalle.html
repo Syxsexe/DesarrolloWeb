@@ -11,7 +11,7 @@
     {% else %}
     <span class="badge bg-warning text-dark fs-6">En mantenimiento</span>
     {% endif %}
-    <a href="{% url 'HomeServers' %}" class="btn btn-outline-secondary btn-sm ms-2">&larr; Volver a la flota</a>
+    <a href="{% url 'home_servidores' %}" class="btn btn-outline-secondary btn-sm ms-2">&larr; Volver a la flota</a>
 {% endblock %}
 
 {% block contenido %}
@@ -84,5 +84,64 @@
         </div>
     </div>
 
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                <span>Alertas e Incidencias Operativas</span>
+                <a href="{% url 'crear_incidencia' servidor.pk %}" class="btn btn-sm btn-danger">+ Nueva Incidencia</a>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for incidencia in incidencias %}
+                <li class="list-group-item {% if incidencia.estado == 'resuelta' %}bg-light{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            {# Insignia de severidad: el color comunica de un vistazo qué tan #}
+                            {# crítico es el fallo, sin tener que leer el texto. #}
+                            {% if incidencia.severidad == 'critica' %}
+                            <span class="badge bg-danger">{{ incidencia.get_severidad_display }}</span>
+                            {% elif incidencia.severidad == 'alta' %}
+                            <span class="badge bg-warning text-dark">{{ incidencia.get_severidad_display }}</span>
+                            {% elif incidencia.severidad == 'media' %}
+                            <span class="badge bg-info text-dark">{{ incidencia.get_severidad_display }}</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ incidencia.get_severidad_display }}</span>
+                            {% endif %}
+
+                            {% if incidencia.estado == 'resuelta' %}
+                            <span class="badge bg-success">Resuelta</span>
+                            {% else %}
+                            <span class="badge border border-danger text-danger">Abierta</span>
+                            {% endif %}
+
+                            <strong class="ms-1 {% if incidencia.estado == 'resuelta' %}text-decoration-line-through text-muted{% endif %}">
+                                {{ incidencia.titulo }}
+                            </strong>
+                            <div class="small text-muted mt-1">{{ incidencia.descripcion }}</div>
+                            <div class="small text-muted">
+                                Reportada: {{ incidencia.fecha_reporte|date:"d/m/Y H:i" }}
+                                {% if incidencia.fecha_resolucion %}
+                                &middot; Resuelta: {{ incidencia.fecha_resolucion|date:"d/m/Y H:i" }}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if incidencia.estado != 'resuelta' %}
+                        <form method="POST" action="{% url 'resolver_incidencia' incidencia.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-success">Marcar como resuelta</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </li>
+                {% empty %}
+                <li class="list-group-item text-center text-muted py-4">
+                    Este servidor no tiene incidencias registradas.
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
 </div>
 {% endblock %}

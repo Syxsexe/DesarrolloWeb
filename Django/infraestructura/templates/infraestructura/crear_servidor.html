@@ -2,15 +2,7 @@
 
 {% block title %}Nuevo Servidor{% endblock %}
 
-{% block content %}
-<form method="POST">
-                    {% csrf_token %}
-                    {{ form.as_table }}
-                    <div class="d-flex justify-content-between mt-4">
-                        <a href="{% url 'home_servidores' %}" class="btn btn-outline-secondary">Cancelar</a>
-                        <button type="submit" class="btn btn-success">Guardar Servidor</button>
-                    </div>
-                </form>
+{% block contenido %}
 <div class="row justify-content-center">
     <div class="col-md-7">
         <div class="card shadow-sm border-0">
