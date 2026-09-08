@@ -2,9 +2,34 @@ from django import forms
 from .models import NodoServidor, IncidenciaServidor
 
 class NodoServidorForm(forms.ModelForm):
+    """ModelForm de alta/edición de nodos, con clases Bootstrap en cada widget.
+
+    Sin esto, Django renderiza <input>/<select> "pelados" (sin form-control
+    ni form-select), que se ven fuera de lugar dentro de una tarjeta Bootstrap:
+    de ahí la necesidad de declarar los widgets explícitamente en vez de
+    dejar que ModelForm los infiera solo del tipo de campo del modelo.
+    """
+
     class Meta:
         model = NodoServidor
         fields = ['nombre_host', 'direccion_ip', 'motor_contenedores', 'proxy_inverso', 'en_produccion']
+        widgets = {
+            'nombre_host': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ej: nodo-prod-01.udenarnova.local',
+            }),
+            'direccion_ip': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ej: 10.10.5.5',
+            }),
+            'motor_contenedores': forms.Select(attrs={'class': 'form-select'}),
+            # form-check-input (en vez de form-control) es la clase que
+            # Bootstrap espera específicamente en checkboxes/switches; los
+            # booleanos del modelo se renderizan como CheckboxInput por
+            # defecto, solo hace falta ponerle la clase correcta.
+            'proxy_inverso': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'en_produccion': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
 
 
 class IncidenciaServidorForm(forms.ModelForm):

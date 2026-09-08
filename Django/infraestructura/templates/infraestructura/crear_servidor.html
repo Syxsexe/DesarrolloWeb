@@ -12,7 +12,23 @@
             <div class="card-body p-4">
                 <form method="POST">
                     {% csrf_token %}
-                    {{ form.as_table }}
+                    {% for field in form %}
+                        {% if field.field.widget.input_type == 'checkbox' %}
+                        <div class="form-check form-switch mb-3">
+                            {{ field }}
+                            <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                        {% else %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                        {% endif %}
+                            {% for error in field.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
                     <div class="d-flex justify-content-between mt-4">
                         <a href="{% url 'home_servidores' %}" class="btn btn-outline-secondary">Cancelar</a>
                         <button type="submit" class="btn btn-success">Guardar Servidor</button>
