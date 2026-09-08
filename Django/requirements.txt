@@ -1,0 +1,18 @@
+# Dependencias del centro de comando.
+#
+# Instalación en un entorno virtual limpio:
+#     python -m venv .venv
+#     .venv\Scripts\activate        (Windows)
+#     source .venv/bin/activate     (Linux / macOS)
+#     pip install -r requirements.txt
+#
+# Solo se listan las dependencias DIRECTAS del proyecto. Las transitivas
+# (asgiref, sqlparse, tzdata) las resuelve pip a partir de estas, así que
+# repetirlas aquí solo crearía dos sitios que mantener sincronizados.
+#
+# Las versiones van fijadas con == para que todos los equipos levanten
+# exactamente el mismo entorno: un rango abierto haría que quien instale
+# mañana se traiga una versión distinta y depure fallos que nadie más ve.
+
+Django==6.1
+djangorestframework==3.18.1

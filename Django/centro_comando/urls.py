@@ -19,5 +19,14 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # API REST (JSON). Va antes que el include de la raíz para que el
+    # prefijo 'api/' no lo capture el enrutado de las vistas HTML.
+    path('api/', include('infraestructura.api_urls')),
+    # Login/logout de la API navegable de DRF: permite autenticarse desde
+    # el navegador y probar POST/PUT/DELETE, que con IsAuthenticatedOrReadOnly
+    # están cerrados a usuarios anónimos.
+    path('api-auth/', include('rest_framework.urls')),
+
     path("",include('infraestructura.urls')),
 ]

@@ -37,6 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Terceros
+    'rest_framework',
+
     'infraestructura',
 ]
 
@@ -117,6 +121,38 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+
+# Django REST Framework
+# https://www.django-rest-framework.org/api-guide/settings/
+
+REST_FRAMEWORK = {
+    # Lectura abierta, escritura solo para usuarios autenticados: la flota
+    # puede consultarse sin credenciales, pero dar de alta o borrar un nodo
+    # exige sesión iniciada. Sin esta clave DRF usa AllowAny y cualquiera
+    # podría hacer DELETE sobre un servidor.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
+
+    # SessionAuthentication reutiliza la sesión del admin de Django, así que
+    # basta con estar logueado ahí (o en /api-auth/login/) para escribir
+    # desde la API navegable.
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+
+    # Paginación global: sin ella, GET /api/servidores/ devolvería la flota
+    # entera en una sola respuesta a medida que crezca.
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+
+    # Filtros disponibles en todos los ViewSets que declaren search_fields
+    # u ordering_fields (ver api_views.py): ?search=nginx, ?ordering=-fecha.
+    'DEFAULT_FILTER_BACKENDS': [
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
+}
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
