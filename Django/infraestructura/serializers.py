@@ -77,7 +77,7 @@ class NodoServidorSerializer(serializers.ModelSerializer):
             'fecha_despliegue', 'incidencias_abiertas',
         ]
 
-    def get_incidencias_abiertas(self, obj):
+    def get_incidencias_abiertas(self, obj) -> int:
         # El ViewSet ya anota este valor sobre el queryset con un único
         # COUNT agregado; el getattr lo aprovecha cuando está disponible y
         # solo cae al conteo por instancia (una consulta extra) si el

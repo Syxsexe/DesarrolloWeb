@@ -1,4 +1,4 @@
-from django.urls import include, path
+from django.urls import path
 from .views import (
     listaServidores, detalleServidor, crear_servidor, editar_servidor, eliminar_servidor,
     crear_incidencia, resolver_incidencia,
@@ -19,5 +19,4 @@ urlpatterns = [
     # Este pk sí es el de la IncidenciaServidor a cerrar; la vista resuelve
     # sola a qué servidor pertenece para redirigir de vuelta a su detalle.
     path('incidencia/<int:pk>/resolver/', resolver_incidencia, name='resolver_incidencia'),
-    path("api-auth/", include("rest_framework.urls"))
 ]
