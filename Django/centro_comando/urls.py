@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -24,6 +25,17 @@ urlpatterns = [
     # API REST (JSON). Va antes que el include de la raíz para que el
     # prefijo 'api/' no lo capture el enrutado de las vistas HTML.
     path('api/', include('infraestructura.api_urls')),
+    # Emisión y renovación de los tokens JWT que consume la SPA de Angular:
+    #
+    #   POST /api/token/          {username, password} -> {access, refresh}
+    #   POST /api/token/refresh/  {refresh}            -> {access}
+    #
+    # Quedan fuera del router de api_urls.py porque no son un recurso con
+    # CRUD, sino dos operaciones sueltas sobre credenciales; el router solo
+    # sabe generar rutas a partir de ViewSets.
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
     # Login/logout de la API navegable de DRF: permite autenticarse desde
     # el navegador y probar POST/PUT/DELETE, que con IsAuthenticatedOrReadOnly
     # están cerrados a usuarios anónimos.

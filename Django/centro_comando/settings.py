@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -129,16 +130,26 @@ STATIC_URL = 'static/'
 REST_FRAMEWORK = {
     # Lectura abierta, escritura solo para usuarios autenticados: la flota
     # puede consultarse sin credenciales, pero dar de alta o borrar un nodo
-    # exige sesión iniciada. Sin esta clave DRF usa AllowAny y cualquiera
+    # exige estar identificado. Sin esta clave DRF usa AllowAny y cualquiera
     # podría hacer DELETE sobre un servidor.
-    #'DEFAULT_PERMISSION_CLASSES': [
-     #   'rest_framework.permissions.IsAuthenticatedOrReadOnly',
-    #],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
 
-    # SessionAuthentication reutiliza la sesión del admin de Django, así que
-    # basta con estar logueado ahí (o en /api-auth/login/) para escribir
-    # desde la API navegable.
+    # Dos mecanismos conviviendo, cada uno para un cliente distinto:
+    #
+    # - JWTAuthentication es el que usa la SPA de Angular. El token viaja
+    #   en la cabecera Authorization y no en una cookie, así que no le
+    #   aplica la protección CSRF ni hay que habilitar credenciales
+    #   cruzadas entre el dev server de Angular y este backend.
+    # - SessionAuthentication se conserva para seguir probando
+    #   POST/PUT/DELETE desde la API navegable reutilizando la sesión del
+    #   admin, sin pegar un token a mano en el navegador.
+    #
+    # El orden importa: DRF recorre las clases en secuencia y se queda con
+    # la primera que consigue identificar al usuario.
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
 
@@ -157,6 +168,26 @@ REST_FRAMEWORK = {
     # drf-spectacular reemplaza el generador de schema por defecto de DRF
     # (CoreAPI, deprecado) para poder servir Swagger UI/Redoc en /api/docs/.
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# Simple JWT
+# https://django-rest-framework-simplejwt.readthedocs.io/
+
+SIMPLE_JWT = {
+    # El access token dura poco a propósito: si se filtra, la ventana en la
+    # que sirve es de una hora. El refresh, de vida larga, es el que permite
+    # renovarlo sin volver a pedir la contraseña al usuario.
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+
+    # Cabecera que espera el backend: "Authorization: Bearer <access>".
+    # Es el valor por defecto de la librería, pero se deja escrito porque
+    # es justo el dato que hay que replicar en el interceptor de Angular.
+    'AUTH_HEADER_TYPES': ('Bearer',),
+
+    # Los tokens se firman con la SECRET_KEY del proyecto: al rotarla en un
+    # despliegue, todos los tokens ya emitidos dejan de ser válidos.
+    'SIGNING_KEY': SECRET_KEY,
 }
 
 SPECTACULAR_SETTINGS = {

@@ -12,7 +12,12 @@ alta llega por la API, sin tener que repetir la regla aquí.
 
 from rest_framework import serializers
 
-from .models import IncidenciaServidor, NodoServidor, RegistroAuditoria
+from .models import (
+    IncidenciaServidor,
+    MantenimientoNodo,
+    NodoServidor,
+    RegistroAuditoria,
+)
 
 
 class RegistroAuditoriaSerializer(serializers.ModelSerializer):
@@ -57,6 +62,29 @@ class IncidenciaServidorSerializer(serializers.ModelSerializer):
             'fecha_reporte', 'fecha_resolucion',
         ]
         read_only_fields = ['estado', 'fecha_resolucion']
+
+
+class MantenimientoNodoSerializer(serializers.ModelSerializer):
+    """Tareas de mantenimiento programadas sobre un nodo.
+
+    Aquí no hay campos de solo lectura más allá del id, al revés que en
+    IncidenciaServidorSerializer: 'fecha_programada' la fija el operador al
+    planificar la ventana (por eso el modelo no usa auto_now_add) y
+    'completado' se marca con un PATCH normal cuando la tarea se ejecuta.
+    No hace falta una @action como resolver() porque al cerrar un
+    mantenimiento no queda ninguna fecha que sellar.
+    """
+
+    servidor_hostname = serializers.CharField(source='servidor.nombre_host', read_only=True)
+    tipo_display = serializers.CharField(source='get_tipo_display', read_only=True)
+
+    class Meta:
+        model = MantenimientoNodo
+        fields = [
+            'id', 'servidor', 'servidor_hostname', 'titulo_tarea',
+            'descripcion_tecnica', 'tipo', 'tipo_display', 'completado',
+            'fecha_programada',
+        ]
 
 
 class NodoServidorSerializer(serializers.ModelSerializer):

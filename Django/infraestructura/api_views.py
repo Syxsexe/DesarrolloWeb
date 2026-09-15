@@ -19,9 +19,15 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .models import IncidenciaServidor, NodoServidor, RegistroAuditoria
+from .models import (
+    IncidenciaServidor,
+    MantenimientoNodo,
+    NodoServidor,
+    RegistroAuditoria,
+)
 from .serializers import (
     IncidenciaServidorSerializer,
+    MantenimientoNodoSerializer,
     NodoServidorDetalleSerializer,
     NodoServidorSerializer,
     RegistroAuditoriaSerializer,
@@ -99,6 +105,20 @@ class NodoServidorViewSet(viewsets.ModelViewSet):
             incidencias = incidencias.filter(estado=estado)
 
         return self._respuesta_paginada(incidencias, IncidenciaServidorSerializer)
+
+    @action(detail=True, methods=['get'])
+    def mantenimientos(self, request, pk=None):
+        """Agenda del nodo; admite ?completado=true|false."""
+        nodo = self.get_object()
+        mantenimientos = nodo.mantenimientos.all()
+
+        completado = request.query_params.get('completado')
+        if completado is not None:
+            mantenimientos = mantenimientos.filter(
+                completado=completado.lower() in ('1', 'true', 'si')
+            )
+
+        return self._respuesta_paginada(mantenimientos, MantenimientoNodoSerializer)
 
     def _respuesta_paginada(self, queryset, serializer_class):
         """Aplica al queryset la misma paginación configurada globalmente.
@@ -197,3 +217,46 @@ class IncidenciaServidorViewSet(viewsets.ModelViewSet):
         incidencia.save(update_fields=['estado', 'fecha_resolucion'])
 
         return Response(self.get_serializer(incidencia).data)
+
+
+class MantenimientoNodoViewSet(viewsets.ModelViewSet):
+    """CRUD de la agenda de mantenimientos.
+
+    Es el equivalente en API del CRUD con Vistas Basadas en Clases de
+    views.py: lo que allí son cinco clases (MantenimientoListView,
+    DetailView, CreateView, UpdateView, DeleteView) aquí cabe en un solo
+    ModelViewSet, porque las cinco operaciones comparten modelo y
+    serializer y solo se distinguen por el verbo HTTP.
+    """
+
+    # Mismo motivo que en los otros ViewSets: el serializer expone
+    # servidor_hostname, así que sin select_related cada fila del listado
+    # dispararía una consulta extra para resolver el FK.
+    queryset = MantenimientoNodo.objects.select_related('servidor')
+    serializer_class = MantenimientoNodoSerializer
+    search_fields = ('titulo_tarea', 'descripcion_tecnica', 'servidor__nombre_host')
+    ordering_fields = ('fecha_programada', 'tipo', 'completado')
+
+    def get_queryset(self):
+        """Filtros por ?servidor=<id>, ?tipo= y ?completado=."""
+        queryset = super().get_queryset()
+        params = self.request.query_params
+
+        servidor = params.get('servidor')
+        if servidor:
+            queryset = queryset.filter(servidor_id=servidor)
+
+        tipo = params.get('tipo')
+        if tipo:
+            queryset = queryset.filter(tipo=tipo)
+
+        # El mismo cuidado que en NodoServidorViewSet.get_queryset(): la
+        # cadena "false" no es vacía y por tanto es verdadera en Python, de
+        # ahí la comparación contra literales en vez de un bool() directo.
+        completado = params.get('completado')
+        if completado is not None:
+            queryset = queryset.filter(
+                completado=completado.lower() in ('1', 'true', 'si')
+            )
+
+        return queryset

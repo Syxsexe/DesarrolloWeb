@@ -41,6 +41,7 @@ Queda en http://127.0.0.1:8000/.
 | `NodoServidor` | Un servidor de la flota. Su IP se valida contra las subredes corporativas autorizadas (`10.10.0.0/16`, `10.20.0.0/16`, `172.16.8.0/22`). |
 | `RegistroAuditoria` | Bitácora de eventos de un nodo. Solo crece: no se edita ni se borra. |
 | `IncidenciaServidor` | Fallo operativo de un nodo. Nace `abierta` y se cierra como `resuelta`. |
+| `MantenimientoNodo` | Tarea técnica programada sobre un nodo. Su CRUD HTML usa Vistas Basadas en Clases. |
 
 ## Interfaz HTML
 
@@ -64,14 +65,37 @@ propio navegador entrando a `/api/`.
 | `/api/servidores/` · `/api/servidores/<pk>/` | CRUD completo |
 | `/api/servidores/<pk>/auditorias/` | GET |
 | `/api/servidores/<pk>/incidencias/` | GET (admite `?estado=`) |
+| `/api/servidores/<pk>/mantenimientos/` | GET (admite `?completado=`) |
 | `/api/auditorias/` · `/api/auditorias/<pk>/` | Solo GET y POST |
 | `/api/incidencias/` · `/api/incidencias/<pk>/` | CRUD |
 | `/api/incidencias/<pk>/resolver/` | POST |
+| `/api/mantenimientos/` · `/api/mantenimientos/<pk>/` | CRUD completo |
+| `/api/token/` · `/api/token/refresh/` | POST (obtener y renovar el JWT) |
 | `/api-auth/login/` | Login para la API navegable |
 
 **Permisos:** lectura abierta, escritura solo para usuarios autenticados
-(`IsAuthenticatedOrReadOnly`). Para probar POST/PUT/DELETE desde el
-navegador hay que iniciar sesión en `/api-auth/login/` o en `/admin/`.
+(`IsAuthenticatedOrReadOnly`). Hay dos formas de identificarse, según el
+cliente:
+
+- **JWT** (`rest_framework_simplejwt`), que es la que usa la SPA de Angular.
+  Se pide un par de tokens y el `access` se manda en cada petición:
+
+  ```bash
+  curl -X POST http://127.0.0.1:8000/api/token/        -H "Content-Type: application/json"        -d '{"username": "admin", "password": "..."}'
+  # -> {"access": "...", "refresh": "..."}
+
+  curl http://127.0.0.1:8000/api/servidores/        -H "Authorization: Bearer <access>"
+  ```
+
+  El `access` vive 1 hora y el `refresh` 7 días; `POST /api/token/refresh/`
+  con `{"refresh": "..."}` devuelve un `access` nuevo sin volver a pedir la
+  contraseña. Se eligió JWT sobre la sesión de Django porque el token
+  viaja en una cabecera y no en una cookie: un cliente en otro origen no
+  necesita entonces CSRF ni credenciales cruzadas.
+
+- **Sesión**, que se conserva para la API navegable: basta con estar
+  logueado en `/api-auth/login/` o en `/admin/` para probar POST/PUT/DELETE
+  desde el navegador.
 
 **Paginación:** 20 resultados por página (`?page=2`).
 
@@ -108,5 +132,6 @@ Django/
     ├── serializers.py       # Serializers de la API
     ├── api_views.py         # ViewSets de la API
     ├── api_urls.py          # Router de la API
+    ├── test_smoke_jwt.py    # Pruebas de humo de permisos y JWT
     └── templates/
 ```

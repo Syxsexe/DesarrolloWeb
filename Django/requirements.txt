@@ -17,3 +17,9 @@
 Django==6.1
 djangorestframework==3.18.1
 drf-spectacular==0.30.0
+
+# Autenticación por token JWT para la API. La SPA de Angular vive en otro
+# origen (el dev server de Angular), donde el par cookie de sesión + CSRF
+# obliga a configurar credenciales cruzadas en ambos lados; un token en la
+# cabecera Authorization no depende de cookies y evita todo ese montaje.
+djangorestframework-simplejwt==5.5.1

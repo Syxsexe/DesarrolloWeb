@@ -10,6 +10,7 @@ Para NodoServidorViewSet, por ejemplo, produce:
     GET/PUT/PATCH/DELETE  /api/servidores/<pk>/
     GET             /api/servidores/<pk>/auditorias/
     GET             /api/servidores/<pk>/incidencias/
+    GET             /api/servidores/<pk>/mantenimientos/
 
 DefaultRouter (y no SimpleRouter) porque añade además una vista índice en
 /api/ que lista los endpoints disponibles, cómoda para explorar la API
@@ -20,6 +21,7 @@ from rest_framework.routers import DefaultRouter
 
 from .api_views import (
     IncidenciaServidorViewSet,
+    MantenimientoNodoViewSet,
     NodoServidorViewSet,
     RegistroAuditoriaViewSet,
 )
@@ -30,5 +32,6 @@ router = DefaultRouter()
 router.register(r'servidores', NodoServidorViewSet, basename='servidor')
 router.register(r'auditorias', RegistroAuditoriaViewSet, basename='auditoria')
 router.register(r'incidencias', IncidenciaServidorViewSet, basename='incidencia')
+router.register(r'mantenimientos', MantenimientoNodoViewSet, basename='mantenimiento')
 
 urlpatterns = router.urls
