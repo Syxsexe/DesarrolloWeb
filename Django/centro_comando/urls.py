@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,6 +28,14 @@ urlpatterns = [
     # el navegador y probar POST/PUT/DELETE, que con IsAuthenticatedOrReadOnly
     # están cerrados a usuarios anónimos.
     path('api-auth/', include('rest_framework.urls')),
+
+    # Documentación de la API: el schema en sí (YAML/JSON) más las dos
+    # interfaces que lo consumen. Se separan porque cada una la usa un
+    # público distinto: Swagger UI para probar peticiones en vivo, Redoc
+    # para lectura de referencia.
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 
     path("",include('infraestructura.urls')),
 ]

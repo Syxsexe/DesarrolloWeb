@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
     # Terceros
     'rest_framework',
+    'drf_spectacular',
 
     'infraestructura',
 ]
@@ -130,9 +131,9 @@ REST_FRAMEWORK = {
     # puede consultarse sin credenciales, pero dar de alta o borrar un nodo
     # exige sesión iniciada. Sin esta clave DRF usa AllowAny y cualquiera
     # podría hacer DELETE sobre un servidor.
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
-    ],
+    #'DEFAULT_PERMISSION_CLASSES': [
+     #   'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    #],
 
     # SessionAuthentication reutiliza la sesión del admin de Django, así que
     # basta con estar logueado ahí (o en /api-auth/login/) para escribir
@@ -152,6 +153,20 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ],
+
+    # drf-spectacular reemplaza el generador de schema por defecto de DRF
+    # (CoreAPI, deprecado) para poder servir Swagger UI/Redoc en /api/docs/.
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Centro de Comando API',
+    'DESCRIPTION': 'API REST de la flota de servidores, sus incidencias y bitácora de auditoría.',
+    'VERSION': '1.0.0',
+    # Evita que drf-spectacular sirva también el schema bajo su propia
+    # vista de settings; el router de api_urls.py ya expone /api/ como
+    # índice de la API navegable de DRF.
+    'SERVE_INCLUDE_SCHEMA': False,
 }
 
 # Email
