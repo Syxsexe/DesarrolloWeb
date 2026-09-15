@@ -1,0 +1,8 @@
+// Bootstrap completo. Para personalizarlo (colores, tipografía, espaciados)
+// se declaran las variables ANTES de este @use con la sintaxis:
+//
+//   @use 'bootstrap/scss/bootstrap' with ($primary: #0d5c63);
+//
+// Sass resuelve la ruta gracias a stylePreprocessorOptions.includePaths
+// en angular.json, que añade node_modules al camino de búsqueda.
+@use 'bootstrap/scss/bootstrap';
