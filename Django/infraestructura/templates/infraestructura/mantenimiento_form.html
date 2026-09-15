@@ -1,0 +1,30 @@
+{% extends 'infraestructura/base.html' %}
+
+{% block title %}Formulario de Mantenimiento - UdenarNova{% endblock %}
+
+{% block contenido %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white py-3">
+                {# 'object' existe en UpdateView (la instancia editada) pero es
+                   None en CreateView: sirve para distinguir alta de edición
+                   sin necesidad de dos plantillas separadas. #}
+                <h4 class="mb-0">
+                    {% if object %}Editar Tarea Técnica{% else %}Gestión de Tarea Técnica{% endif %}
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'lista_mantenimientos' %}" class="btn btn-outline-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary fw-bold">Guardar Mantenimiento</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

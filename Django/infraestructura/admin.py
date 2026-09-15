@@ -1,5 +1,5 @@
 from django.contrib import admin, messages
-from .models import NodoServidor, IncidenciaServidor
+from .models import NodoServidor, IncidenciaServidor, MantenimientoNodo
 
 
 @admin.register(NodoServidor)
@@ -60,3 +60,11 @@ class IncidenciaServidorAdmin(admin.ModelAdmin):
     list_filter = ('severidad', 'estado')
     search_fields = ('titulo', 'descripcion', 'servidor__nombre_host')
     ordering = ('-fecha_reporte',)
+
+
+@admin.register(MantenimientoNodo)
+class MantenimientoNodoAdmin(admin.ModelAdmin):
+    list_display = ('titulo_tarea', 'servidor', 'tipo', 'fecha_programada', 'completado')
+    list_filter = ('tipo', 'completado')
+    search_fields = ('titulo_tarea', 'descripcion_tecnica', 'servidor__nombre_host')
+    ordering = ('fecha_programada',)

@@ -1,5 +1,5 @@
 from django import forms
-from .models import NodoServidor, IncidenciaServidor
+from .models import NodoServidor, IncidenciaServidor, MantenimientoNodo
 
 class NodoServidorForm(forms.ModelForm):
     """ModelForm de alta/edición de nodos, con clases Bootstrap en cada widget.
@@ -57,4 +57,43 @@ class IncidenciaServidorForm(forms.ModelForm):
                 'placeholder': 'Describe el fallo observado, su impacto y contexto relevante.',
             }),
             'severidad': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+
+class MantenimientoForm(forms.ModelForm):
+    """Formulario del CRUD de mantenimientos, reutilizado por Create y Update.
+
+    Aquí sí se incluye 'servidor' en `fields` (al contrario que en
+    IncidenciaServidorForm): el alta de un mantenimiento se hace desde el
+    listado general, no desde la ficha de un nodo, así que la URL no trae
+    ningún pk de servidor del que deducirlo y el usuario debe elegirlo.
+
+    'fecha_programada' usa type='datetime-local' para que el navegador
+    muestre su selector nativo de fecha y hora en vez de un campo de texto.
+    """
+
+    class Meta:
+        model = MantenimientoNodo
+        fields = ['servidor', 'titulo_tarea', 'descripcion_tecnica', 'tipo',
+                  'fecha_programada', 'completado']
+        widgets = {
+            'servidor': forms.Select(attrs={'class': 'form-select'}),
+            'titulo_tarea': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ej: Upgrade de kernel a 6.8 LTS',
+            }),
+            'descripcion_tecnica': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Pasos previstos, ventana estimada y plan de rollback.',
+            }),
+            'tipo': forms.Select(attrs={'class': 'form-select'}),
+            'fecha_programada': forms.DateTimeInput(
+                attrs={'class': 'form-control', 'type': 'datetime-local'},
+                # Sin format, el valor precargado al editar no coincide con
+                # lo que espera datetime-local y el navegador deja el campo
+                # vacío: hay que emitirlo en ISO y sin segundos.
+                format='%Y-%m-%dT%H:%M',
+            ),
+            'completado': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
