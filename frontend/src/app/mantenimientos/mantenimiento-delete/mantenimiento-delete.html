@@ -1,0 +1,9 @@
+@if (mantenimiento(); as m) {
+  <app-confirm-delete
+    [mensaje]="'Estás a punto de eliminar permanentemente el mantenimiento ' + m.titulo_tarea + '.'"
+    [enviando]="enviando()"
+    [error]="error()"
+    (confirm)="confirmar()"
+    (cancel)="cancelar()"
+  />
+}

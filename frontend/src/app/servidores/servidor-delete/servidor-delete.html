@@ -1,0 +1,9 @@
+@if (servidor(); as nodo) {
+  <app-confirm-delete
+    [mensaje]="'Estás a punto de eliminar permanentemente el servidor ' + nodo.nombre_host + ' (' + nodo.direccion_ip + ').'"
+    [enviando]="enviando()"
+    [error]="error()"
+    (confirm)="confirmar()"
+    (cancel)="cancelar()"
+  />
+}

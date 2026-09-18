@@ -1,0 +1,112 @@
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-primary text-white py-3">
+        <h4 class="mb-0">
+          @if (esEdicion()) {
+            Editar Tarea Técnica
+          } @else {
+            Gestión de Tarea Técnica
+          }
+        </h4>
+      </div>
+      <div class="card-body p-4">
+        @if (cargando()) {
+          <p class="text-muted">Cargando...</p>
+        } @else {
+          @if (errorGeneral()) {
+            <div class="alert alert-danger">{{ errorGeneral() }}</div>
+          }
+          <form [formGroup]="form" (ngSubmit)="submit()">
+            <div class="mb-3">
+              <label for="servidor" class="form-label">Servidor Asignado</label>
+              <select
+                id="servidor"
+                class="form-select"
+                formControlName="servidor"
+                [class.is-invalid]="form.get('servidor')?.invalid && form.get('servidor')?.touched"
+              >
+                <option [value]="0" disabled>Selecciona un servidor</option>
+                @for (nodo of servidores(); track nodo.id) {
+                  <option [value]="nodo.id">{{ nodo.nombre_host }}</option>
+                }
+              </select>
+              @if (form.get('servidor')?.hasError('backend')) {
+                <div class="text-danger small mt-1">{{ form.get('servidor')?.getError('backend') }}</div>
+              }
+            </div>
+
+            <div class="mb-3">
+              <label for="titulo_tarea" class="form-label">Título del Mantenimiento</label>
+              <input
+                id="titulo_tarea"
+                type="text"
+                class="form-control"
+                placeholder="Ej: Upgrade de kernel a 6.8 LTS"
+                formControlName="titulo_tarea"
+                [class.is-invalid]="form.get('titulo_tarea')?.invalid && form.get('titulo_tarea')?.touched"
+              />
+              @if (form.get('titulo_tarea')?.hasError('backend')) {
+                <div class="text-danger small mt-1">{{ form.get('titulo_tarea')?.getError('backend') }}</div>
+              }
+            </div>
+
+            <div class="mb-3">
+              <label for="descripcion_tecnica" class="form-label">Descripción de la Tarea</label>
+              <textarea
+                id="descripcion_tecnica"
+                class="form-control"
+                rows="3"
+                placeholder="Pasos previstos, ventana estimada y plan de rollback."
+                formControlName="descripcion_tecnica"
+                [class.is-invalid]="form.get('descripcion_tecnica')?.invalid && form.get('descripcion_tecnica')?.touched"
+              ></textarea>
+              @if (form.get('descripcion_tecnica')?.hasError('backend')) {
+                <div class="text-danger small mt-1">{{ form.get('descripcion_tecnica')?.getError('backend') }}</div>
+              }
+            </div>
+
+            <div class="mb-3">
+              <label for="tipo" class="form-label">Tipo de Tarea</label>
+              <select id="tipo" class="form-select" formControlName="tipo">
+                @for (choice of tipoChoices; track choice.value) {
+                  <option [value]="choice.value">{{ choice.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="fecha_programada" class="form-label">Fecha y Hora Programada</label>
+              <input
+                id="fecha_programada"
+                type="datetime-local"
+                class="form-control"
+                formControlName="fecha_programada"
+                [class.is-invalid]="form.get('fecha_programada')?.invalid && form.get('fecha_programada')?.touched"
+              />
+              @if (form.get('fecha_programada')?.hasError('backend')) {
+                <div class="text-danger small mt-1">{{ form.get('fecha_programada')?.getError('backend') }}</div>
+              }
+            </div>
+
+            <div class="form-check form-switch mb-3">
+              <input id="completado" type="checkbox" class="form-check-input" formControlName="completado" />
+              <label class="form-check-label" for="completado">¿Tarea Ejecutada?</label>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+              <a routerLink="/mantenimientos" class="btn btn-outline-secondary">Cancelar</a>
+              <button type="submit" class="btn btn-primary fw-bold" [disabled]="enviando()">
+                @if (enviando()) {
+                  Guardando...
+                } @else {
+                  Guardar Mantenimiento
+                }
+              </button>
+            </div>
+          </form>
+        }
+      </div>
+    </div>
+  </div>
+</div>

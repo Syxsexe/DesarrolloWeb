@@ -1,0 +1,98 @@
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-success text-white py-3">
+        <h4 class="mb-0">
+          @if (esEdicion()) {
+            Editar Nodo de Servidor
+          } @else {
+            Registrar Nuevo Nodo de Servidor
+          }
+        </h4>
+      </div>
+      <div class="card-body p-4">
+        @if (cargando()) {
+          <p class="text-muted">Cargando...</p>
+        } @else {
+          @if (errorGeneral()) {
+            <div class="alert alert-danger">{{ errorGeneral() }}</div>
+          }
+          <form [formGroup]="form" (ngSubmit)="submit()">
+            <div class="mb-3">
+              <label for="nombre_host" class="form-label">Hostname</label>
+              <input
+                id="nombre_host"
+                type="text"
+                class="form-control"
+                placeholder="Ej: nodo-prod-01.udenarnova.local"
+                formControlName="nombre_host"
+                [class.is-invalid]="form.get('nombre_host')?.invalid && form.get('nombre_host')?.touched"
+              />
+              @if (form.get('nombre_host')?.hasError('backend')) {
+                <div class="text-danger small mt-1">{{ form.get('nombre_host')?.getError('backend') }}</div>
+              }
+            </div>
+
+            <div class="mb-3">
+              <label for="direccion_ip" class="form-label">Dirección IP</label>
+              <input
+                id="direccion_ip"
+                type="text"
+                class="form-control"
+                placeholder="Ej: 10.10.5.5"
+                formControlName="direccion_ip"
+                [class.is-invalid]="form.get('direccion_ip')?.invalid && form.get('direccion_ip')?.touched"
+              />
+              <div class="form-text">
+                Debe pertenecer a una subred corporativa autorizada (10.10.0.0/16, 10.20.0.0/16, 172.16.8.0/22).
+              </div>
+              @if (form.get('direccion_ip')?.hasError('backend')) {
+                <div class="text-danger small mt-1">{{ form.get('direccion_ip')?.getError('backend') }}</div>
+              }
+            </div>
+
+            <div class="mb-3">
+              <label for="motor_contenedores" class="form-label">Motor de Contenedores</label>
+              <select id="motor_contenedores" class="form-select" formControlName="motor_contenedores">
+                @for (choice of motorChoices; track choice.value) {
+                  <option [value]="choice.value">{{ choice.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-check form-switch mb-3">
+              <input
+                id="proxy_inverso"
+                type="checkbox"
+                class="form-check-input"
+                formControlName="proxy_inverso"
+              />
+              <label class="form-check-label" for="proxy_inverso">¿Enrutado por Nginx?</label>
+            </div>
+
+            <div class="form-check form-switch mb-3">
+              <input
+                id="en_produccion"
+                type="checkbox"
+                class="form-check-input"
+                formControlName="en_produccion"
+              />
+              <label class="form-check-label" for="en_produccion">Estado Producción</label>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+              <a routerLink="/" class="btn btn-outline-secondary">Cancelar</a>
+              <button type="submit" class="btn btn-success" [disabled]="enviando()">
+                @if (enviando()) {
+                  Guardando...
+                } @else {
+                  Guardar Servidor
+                }
+              </button>
+            </div>
+          </form>
+        }
+      </div>
+    </div>
+  </div>
+</div>

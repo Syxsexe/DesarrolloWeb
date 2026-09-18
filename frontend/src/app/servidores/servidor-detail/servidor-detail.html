@@ -1,0 +1,113 @@
+@if (cargando()) {
+  <p class="text-muted">Cargando...</p>
+} @else if (error() && !servidor()) {
+  <div class="alert alert-danger">{{ error() }}</div>
+} @else if (servidor(); as nodo) {
+  @if (error()) {
+    <div class="alert alert-warning">{{ error() }}</div>
+  }
+
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
+      <h4 class="mb-0">{{ nodo.nombre_host }}</h4>
+      <div>
+        <a [routerLink]="['/servidores', nodo.id, 'editar']" class="btn btn-sm btn-light">Editar</a>
+        <a [routerLink]="['/servidores', nodo.id, 'eliminar']" class="btn btn-sm btn-outline-light">Eliminar</a>
+      </div>
+    </div>
+    <div class="card-body">
+      <dl class="row mb-0">
+        <dt class="col-sm-3">Dirección IP</dt>
+        <dd class="col-sm-9">{{ nodo.direccion_ip }}</dd>
+
+        <dt class="col-sm-3">Motor de Contenedores</dt>
+        <dd class="col-sm-9">{{ nodo.motor_contenedores_display }}</dd>
+
+        <dt class="col-sm-3">Proxy Nginx</dt>
+        <dd class="col-sm-9">{{ nodo.proxy_inverso ? 'Sí' : 'No' }}</dd>
+
+        <dt class="col-sm-3">Estado</dt>
+        <dd class="col-sm-9">
+          @if (nodo.en_produccion) {
+            <span class="badge bg-success">Producción</span>
+          } @else {
+            <span class="badge bg-warning text-dark">Mantenimiento</span>
+          }
+        </dd>
+
+        <dt class="col-sm-3">Fecha de despliegue</dt>
+        <dd class="col-sm-9">{{ nodo.fecha_despliegue | date: 'medium' }}</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Incidencias</h5>
+    <a [routerLink]="['/servidores', nodo.id, 'incidencias', 'nueva']" class="btn btn-sm btn-danger">
+      Reportar incidencia
+    </a>
+  </div>
+  <div class="table-responsive mb-4">
+    <table class="table table-sm table-striped bg-white shadow-sm rounded align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>Título</th>
+          <th>Severidad</th>
+          <th>Estado</th>
+          <th>Reportada</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (incidencia of nodo.incidencias; track incidencia.id) {
+          <tr>
+            <td>{{ incidencia.titulo }}</td>
+            <td>{{ incidencia.severidad_display }}</td>
+            <td>{{ incidencia.estado_display }}</td>
+            <td>{{ incidencia.fecha_reporte | date: 'short' }}</td>
+            <td class="text-end">
+              @if (incidencia.estado === 'abierta') {
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-success"
+                  [disabled]="resolviendoId() === incidencia.id"
+                  (click)="resolver(incidencia.id)"
+                >
+                  Resolver
+                </button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="text-center text-muted py-3">Sin incidencias registradas.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <h5 class="mb-3">Bitácora de Auditoría</h5>
+  <div class="table-responsive mb-5">
+    <table class="table table-sm table-striped bg-white shadow-sm rounded align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>Detalle</th>
+          <th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (evento of nodo.auditorias; track evento.id) {
+          <tr>
+            <td>{{ evento.detalles }}</td>
+            <td>{{ evento.fecha_evento | date: 'medium' }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="2" class="text-center text-muted py-3">Sin eventos registrados.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
