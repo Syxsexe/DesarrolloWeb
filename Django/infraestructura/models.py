@@ -210,3 +210,55 @@ class IncidenciaServidor(models.Model):
         # Las incidencias más recientes (y presumiblemente las que aún
         # requieren atención) aparecen primero en cualquier listado.
         ordering = ('-fecha_reporte',)
+
+
+class MantenimientoNodo(models.Model):
+    """Tareas técnicas programadas (preventivas o correctivas) sobre un nodo.
+
+    A diferencia de IncidenciaServidor —que nace de un fallo ya ocurrido—,
+    un mantenimiento se planifica a futuro: por eso 'fecha_programada' es
+    un campo editable por el usuario y no un auto_now_add. Este modelo es
+    el que sustenta el CRUD construido con Vistas Basadas en Clases (CBV).
+    """
+
+    TIPO_TAREA = [
+        ('actualizacion', 'Actualización de Sistema'),
+        ('backup', 'Respaldo de Base de Datos'),
+        ('seguridad', 'Parche de Seguridad'),
+        ('hardware', 'Revisión de Hardware'),
+    ]
+
+    # Mismo patrón uno-a-muchos que 'auditorias' e 'incidencias':
+    # related_name='mantenimientos' habilita nodo.mantenimientos.all().
+    servidor = models.ForeignKey(
+        NodoServidor,
+        on_delete=models.CASCADE,
+        related_name='mantenimientos',
+        verbose_name="Servidor Asignado",
+    )
+
+    titulo_tarea = models.CharField(max_length=150, verbose_name="Título del Mantenimiento")
+    descripcion_tecnica = models.TextField(verbose_name="Descripción de la Tarea")
+
+    tipo = models.CharField(
+        max_length=30,
+        choices=TIPO_TAREA,
+        default='actualizacion',
+        verbose_name="Tipo de Tarea",
+    )
+
+    completado = models.BooleanField(default=False, verbose_name="¿Tarea Ejecutada?")
+
+    # Editable (sin auto_now_add) porque el operador decide cuándo se
+    # ejecutará la ventana de mantenimiento.
+    fecha_programada = models.DateTimeField(verbose_name="Fecha y Hora Programada")
+
+    def __str__(self):
+        return f"{self.titulo_tarea} - {self.servidor.nombre_host}"
+
+    class Meta:
+        verbose_name = "Mantenimiento de Servidor"
+        verbose_name_plural = "Programación de Mantenimientos"
+        # Las ventanas más próximas primero, que es el orden en que el
+        # equipo de operaciones necesita leer la agenda.
+        ordering = ('fecha_programada',)

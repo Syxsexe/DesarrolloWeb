@@ -1,0 +1,64 @@
+{% extends 'infraestructura/base.html' %}
+
+{% block title %}Mantenimientos Programados - UdenarNova{% endblock %}
+
+{% block encabezado_titulo %}Mantenimientos Técnicos{% endblock %}
+{% block encabezado_subtitulo %}UdenarNova SAS - Programación de tareas sobre la flota{% endblock %}
+
+{% block encabezado_cuerpo %}
+    <div class="alert alert-info mb-0" role="alert">
+        Tareas registradas en la agenda: <strong>{{ mantenimientos|length }}</strong>
+    </div>
+{% endblock %}
+
+{% block contenido %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h4 mb-0 text-primary">Agenda de Mantenimientos</h2>
+    <a href="{% url 'crear_mantenimiento' %}" class="btn btn-success fw-bold">+ Programar Mantenimiento</a>
+</div>
+
+<div class="table-responsive mb-5">
+    <table class="table table-striped table-hover bg-white shadow-sm rounded align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Tarea</th>
+                <th>Servidor</th>
+                <th>Tipo</th>
+                <th>Fecha Programada</th>
+                <th>Estado</th>
+                <th class="text-end">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in mantenimientos %}
+            <tr>
+                <td class="fw-bold">
+                    <a href="{% url 'detalle_mantenimiento' m.pk %}">{{ m.titulo_tarea }}</a>
+                </td>
+                <td>
+                    <a href="{% url 'detalle_servidor' m.servidor.pk %}">{{ m.servidor.nombre_host }}</a>
+                </td>
+                <td>{{ m.get_tipo_display }}</td>
+                <td>{{ m.fecha_programada|date:"Y-m-d H:i" }}</td>
+                <td>
+                    {% if m.completado %}
+                    <span class="badge bg-success">Ejecutado</span>
+                    {% else %}
+                    <span class="badge bg-warning text-dark">Pendiente</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    <a href="{% url 'detalle_mantenimiento' m.pk %}" class="btn btn-sm btn-outline-primary">Ver</a>
+                    <a href="{% url 'editar_mantenimiento' m.pk %}" class="btn btn-sm btn-outline-warning">Editar</a>
+                    <a href="{% url 'eliminar_mantenimiento' m.pk %}" class="btn btn-sm btn-outline-danger">Eliminar</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center text-muted py-4">No hay tareas programadas.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

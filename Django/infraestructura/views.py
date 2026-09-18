@@ -1,7 +1,11 @@
 from django.shortcuts import get_object_or_404, render, redirect
+from django.urls import reverse_lazy
 from django.utils import timezone
-from .forms import NodoServidorForm, IncidenciaServidorForm
-from .models import NodoServidor, IncidenciaServidor
+from django.views.generic import (
+    ListView, DetailView, CreateView, UpdateView, DeleteView,
+)
+from .forms import NodoServidorForm, IncidenciaServidorForm, MantenimientoForm
+from .models import NodoServidor, IncidenciaServidor, MantenimientoNodo
 
 def eliminar_servidor(request, pk):
     nodo = get_object_or_404(NodoServidor, pk=pk)
@@ -96,3 +100,52 @@ def resolver_incidencia(request, pk):
         incidencia.save()
     return redirect('detalle_servidor', pk=incidencia.servidor.pk)
 
+
+# --- CRUD de mantenimientos con Vistas Basadas en Clases (CBV) -------------
+# Todo lo que arriba se escribe a mano (if request.method == 'POST',
+# form.is_valid(), form.save(), el render final) lo resuelven por debajo
+# las vistas genéricas de Django: aquí solo se declara QUÉ modelo, QUÉ
+# formulario y QUÉ plantilla usar.
+
+class MantenimientoListView(ListView):
+    model = MantenimientoNodo
+    template_name = 'infraestructura/mantenimiento_list.html'
+    # Sin esto la plantilla recibiría el queryset como 'object_list' /
+    # 'mantenimientonodo_list'; 'mantenimientos' se lee mucho mejor.
+    context_object_name = 'mantenimientos'
+
+    def get_queryset(self):
+        # select_related trae el NodoServidor en el mismo JOIN: la plantilla
+        # imprime m.servidor.nombre_host por cada fila y sin esto Django
+        # lanzaría una consulta extra por mantenimiento (problema N+1).
+        return super().get_queryset().select_related('servidor')
+
+
+class MantenimientoDetailView(DetailView):
+    model = MantenimientoNodo
+    template_name = 'infraestructura/mantenimiento_detail.html'
+    context_object_name = 'mantenimiento'
+
+
+class MantenimientoCreateView(CreateView):
+    model = MantenimientoNodo
+    form_class = MantenimientoForm
+    template_name = 'infraestructura/mantenimiento_form.html'
+    # reverse_lazy (y no reverse) porque success_url se evalúa al importar
+    # el módulo, cuando el registro de URLs todavía no está cargado.
+    success_url = reverse_lazy('lista_mantenimientos')
+
+
+class MantenimientoUpdateView(UpdateView):
+    model = MantenimientoNodo
+    form_class = MantenimientoForm
+    # La misma plantilla que el alta: CreateView y UpdateView comparten
+    # ModelFormMixin, así que ambas exponen 'form' en el contexto.
+    template_name = 'infraestructura/mantenimiento_form.html'
+    success_url = reverse_lazy('lista_mantenimientos')
+
+
+class MantenimientoDeleteView(DeleteView):
+    model = MantenimientoNodo
+    template_name = 'infraestructura/mantenimiento_confirm_delete.html'
+    success_url = reverse_lazy('lista_mantenimientos')
