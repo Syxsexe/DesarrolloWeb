@@ -6,6 +6,19 @@ El proyecto es **centro_comando**: un panel de gestión de una flota de
 servidores, con su app `infraestructura`. Ofrece dos interfaces sobre los
 mismos datos: vistas HTML con plantillas Bootstrap y una API REST en JSON.
 
+## Puesta en marcha rápida (Windows)
+
+En la raíz del repo hay dos scripts que lo hacen todo:
+
+| Archivo | Qué hace |
+| --- | --- |
+| `setup.bat` | Instala Python y Node.js con `winget` si faltan, crea el entorno virtual, instala dependencias (pip y npm), aplica migraciones y pide crear un superusuario si no hay ninguno. Se puede repetir sin problema. |
+| `iniciar.bat` | Abre dos ventanas: backend en http://127.0.0.1:8000 y frontend Angular en http://localhost:4200 (que reenvía `/api` al backend). Para pararlos, se cierran las ventanas. |
+
+Basta con doble clic en `setup.bat` la primera vez y en `iniciar.bat` cada
+vez que se quiera trabajar. Los pasos manuales equivalentes del backend
+están a continuación.
+
 ## Puesta en marcha
 
 Todos los comandos se ejecutan desde el directorio `Django/` (el que
